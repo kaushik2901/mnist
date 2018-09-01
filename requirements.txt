@@ -12,4 +12,4 @@ urllib3==1.22
 user-agents==1.1.0
 gunicorn>=19.1.0
 Keras==2.1.5
-wsgiref==0.1.2
+Pillow==5.2.0
