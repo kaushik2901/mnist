@@ -1,0 +1,156 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HandWritten Digit Recognition</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        .cont {
+            padding: 20px;
+            position: relative;
+        }
+
+        .buttons {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            margin: 20px;
+        }
+
+        #canvas, #result {
+            width: 100%;
+            height: 50vh;
+            border: 1px solid black;
+            border-radius: 4px;
+        }
+
+        #canvas {
+            cursor: pointer;
+        }
+
+        #result {
+            display: flex;
+        }
+
+        #content {
+            margin: auto;
+            font-size: 40px;
+        }
+        
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">MNIST</a>
+    </nav>
+    <main class="container">
+        <div class="row">
+            <div class="col-sm cont">
+                <canvas id="canvas"></canvas>
+                <div class="buttons">
+                        <button id="clear" class="btn btn-sm btn-primary">CLEAR</button>
+                        <!-- <button id="submit" class="btn btn-sm btn-success">SUBMIT</button> -->
+                </div>
+            </div>
+            <div class="col-sm cont">
+                <div id="result">
+                    <div id="content">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" ></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+
+    window.onload = () => {
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext('2d');
+
+        var mouse = {
+            x: 0,
+            y: 0
+        };
+
+        $('#canvas').mousemove(function(e) {
+            e.preventDefault();
+            var rect = canvas.getBoundingClientRect(), // abs. size of element
+                scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
+                scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+
+                mouse.x = (e.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+                mouse.y = (e.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+        });
+
+        canvas.addEventListener('touchmove', e => {
+            var touch = e.touches[0];
+            var rect = canvas.getBoundingClientRect(), // abs. size of element
+                scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
+                scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+                // alert("...");
+                mouse.x = (touch.pageX - rect.left) * scaleX,   // scale mouse coordinates after they have
+                mouse.y = (touch.pageY - rect.top) * scaleY     // been adjusted to be relative to element
+        })
+        
+        context.lineWidth = 3;
+        context.lineJoin = 'round';
+        context.lineCap = 'round';
+        context.strokeStyle = '#000';
+
+        $('#canvas').mousedown(e => {
+            context.beginPath();       
+            context.moveTo(mouse.x, mouse.y);
+            canvas.addEventListener('mousemove', paint);
+        });
+
+        $('#canvas').mouseup(e => {
+            canvas.removeEventListener('mousemove', paint);
+            $.post('/', { image: canvas.toDataURL() }, data => {
+                $("#content").html(data.value);
+            });
+        });
+
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            context.beginPath();  
+            var touch = e.touches[0];
+            var rect = canvas.getBoundingClientRect(), // abs. size of element
+                scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for X
+                scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+                // alert("...");
+                mouse.x = (touch.pageX - rect.left) * scaleX,   // scale mouse coordinates after they have
+                mouse.y = (touch.pageY - rect.top) * scaleY       
+            context.moveTo(mouse.x, mouse.y);
+            canvas.addEventListener('touchmove', paint);
+        });
+
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            canvas.removeEventListener('touchmove', paint);
+            $.post('/', { image: canvas.toDataURL() }, data => {
+                $("#content").html(data.value);
+            });
+        });
+
+        let paint = () => {
+            context.lineTo(mouse.x, mouse.y);
+            context.stroke();
+        }
+
+        $("#clear").click(e => {
+            location.reload();
+            // context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        });
+
+        // $("#submit").click(e => {
+
+        // });
+    }
+
+</script>
+</body>
+</html>
