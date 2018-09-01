@@ -12,3 +12,6 @@ urllib3==1.22
 user-agents==1.1.0
 gunicorn>=19.1.0
 Keras==2.1.5
+wsgiref==0.1.2
+-e hg+https://bitbucket.org/etienned/pil-2009-raclette/#egg=PIL
+pyyaml
