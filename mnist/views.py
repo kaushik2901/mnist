@@ -67,7 +67,8 @@ def Index(request):
                 value = value.tolist()
                 print(value)
                 data = {
-                    'value': value[0].index(max(value[0]))
+                    'value': value[0],
+                    'predict': value[0].index(max(value[0]))
                 }
                 return JsonResponse(data)
 

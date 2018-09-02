@@ -5,6 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>HandWritten Digit Recognition</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <style>
         .cont {
             padding: 20px;
@@ -20,7 +23,7 @@
 
         #canvas, #result {
             width: 100%;
-            height: 50vh;
+            min-height: 50vh;
             border: 1px solid black;
             border-radius: 4px;
         }
@@ -54,20 +57,72 @@
                 </div>
             </div>
             <div class="col-sm cont">
-                <div id="result">
+                <div id="result" class="text-center">
                     <div id="content">
-                        
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="row" id="charts">
+
+        </div>
+
     </main>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" ></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script>
-
+    var updatedData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var charts;
     window.onload = () => {
+
+        var graph = () => {
+            charts = Highcharts.chart('charts', {
+                    chart: {
+                        type: 'column',
+                    },
+                    title: {
+                        text: 'Prediction'
+                    },
+                    xAxis: {
+                        categories: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                        title: {
+                            text: null
+                        }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'Porbability',
+                            align: 'high'
+                        },
+                        labels: {
+                            overflow: 'justify'
+                        }
+                    },
+                    tooltip: {
+                        valueSuffix: 'value'
+                    },
+                    plotOptions: {
+                        bar: {
+                            dataLabels: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        name: 'value',
+                        data: updatedData
+                    }]
+            });
+        }
+
+        graph();
+
         var canvas = document.getElementById("canvas");
         var context = canvas.getContext('2d');
 
@@ -96,7 +151,7 @@
                 mouse.y = (touch.pageY - rect.top) * scaleY     // been adjusted to be relative to element
         })
         
-        context.lineWidth = 3;
+        context.lineWidth = 20;
         context.lineJoin = 'round';
         context.lineCap = 'round';
         context.strokeStyle = '#000';
@@ -110,7 +165,9 @@
         $('#canvas').mouseup(e => {
             canvas.removeEventListener('mousemove', paint);
             $.post('/', { image: canvas.toDataURL() }, data => {
-                $("#content").html(data.value);
+                $("#content").html(data.predict);
+                updatedData = data.value;
+                graph();
             });
         });
 
@@ -132,7 +189,9 @@
             e.preventDefault();
             canvas.removeEventListener('touchmove', paint);
             $.post('/', { image: canvas.toDataURL() }, data => {
-                $("#content").html(data.value);
+                $("#content").html(data.predict);
+                updatedData = data.value;
+                graph();
             });
         });
 
@@ -142,8 +201,8 @@
         }
 
         $("#clear").click(e => {
-            location.reload();
-            // context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            // location.reload();
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         });
 
         // $("#submit").click(e => {
